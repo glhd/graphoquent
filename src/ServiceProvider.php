@@ -6,23 +6,23 @@ use Illuminate\Support\ServiceProvider as IlluminateProvider;
 
 class ServiceProvider extends IlluminateProvider
 {
-	/**
-	 * Register the service provider.
-	 *
-	 * @return void
-	 */
 	public function register()
 	{
-	
+		$this->app->singleton('graphql', function ($app) {
+			return new GraphQL();
+		});
+		
+		$this->app->alias('graphql', GraphQL::class);
 	}
 	
 	/**
-	 * Get the services provided by the provider.
-	 *
-	 * @return array
+	 * Boot config
 	 */
-	public function provides()
+	public function boot()
 	{
-	
+		$this->mergeConfigFrom(
+			__DIR__.'/../config/graphoquent.php',
+			'graphoquent'
+		);
 	}
 }
