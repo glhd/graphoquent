@@ -1,6 +1,6 @@
 <?php
 
-namespace Galahad\Graphoquent;
+namespace Galahad\Graphoquent\Type;
 
 use GraphQL\Type\Definition\ObjectType;
 use GraphQL\Type\Definition\Type;
@@ -22,6 +22,60 @@ class ModelType extends ObjectType
 	 * @var Model
 	 */
 	protected $model;
+	
+	/**
+	 * Map a phpDocumentor Tag to a GraphQL tag
+	 *
+	 * @param Property|PropertyRead $tag
+	 * @return array
+	 */
+	public static function mapTagToGraphQL($tag)
+	{
+		$name = $tag->getVariableName();
+		$type = static::mapTypeToGraphQL($tag->getType());
+		
+		return [$name => $type];
+	}
+	
+	/**
+	 * Map a type string to a GraphQL Type
+	 *
+	 * @param string $type
+	 * @return Type
+	 */
+	public static function mapTypeToGraphQL($type)
+	{
+		$type = trim(strtolower($type));
+		switch ($type) {
+			case 'int':
+			case 'integer':
+				return Type::int();
+			case 'real':
+			case 'float':
+			case 'double':
+				return Type::float();
+			case 'string':
+				return Type::string();
+			case 'bool':
+			case 'boolean':
+				return Type::boolean();
+			case 'object':
+				return null; // FIXME
+			case 'array':
+			case 'json':
+				return null; // FIXME
+			case 'collection':
+				return null; // FIXME
+			case 'date':
+				return Type::string(); // TODO: Will this work?
+			case 'datetime':
+				return Type::string(); // TODO
+			case 'timestamp':
+				return Type::int();
+			default:
+				return null;
+		}
+	}
 	
 	/**
 	 * Build GraphQL fields from a Model instance
@@ -59,7 +113,7 @@ class ModelType extends ObjectType
 		}
 		
 		return (new Collection($casts))
-			->map(static::class.'::mapTypeToGraphQL')
+			->map([static::class, 'mapTypeToGraphQL'])
 			->filter()
 			->toArray();
 	}
@@ -104,63 +158,9 @@ class ModelType extends ObjectType
 		));
 		
 		return $properties
-			->mapWithKeys(static::class.'::mapTagToGraphQL')
+			->mapWithKeys([static::class, 'mapTagToGraphQL'])
 			->filter()
 			->toArray();
-	}
-	
-	/**
-	 * Map a phpDocumentor Tag to a GraphQL tag
-	 *
-	 * @param Property|PropertyRead $tag
-	 * @return array
-	 */
-	protected static function mapTagToGraphQL($tag)
-	{
-		$name = $tag->getVariableName();
-		$type = static::mapTypeToGraphQL($tag->getType());
-		
-		return [$name => $type];
-	}
-	
-	/**
-	 * Map a type string to a GraphQL Type
-	 *
-	 * @param string $type
-	 * @return Type
-	 */
-	protected static function mapTypeToGraphQL($type)
-	{
-		$type = trim(strtolower($type));
-		switch ($type) {
-			case 'int':
-			case 'integer':
-				return Type::int();
-			case 'real':
-			case 'float':
-			case 'double':
-				return Type::float();
-			case 'string':
-				return Type::string();
-			case 'bool':
-			case 'boolean':
-				return Type::boolean();
-			case 'object':
-				return null; // FIXME
-			case 'array':
-			case 'json':
-				return null; // FIXME
-			case 'collection':
-				return null; // FIXME
-			case 'date':
-				return Type::string(); // TODO: Will this work?
-			case 'datetime':
-				return Type::string(); // TODO
-			case 'timestamp':
-				return Type::int();
-			default:
-				return null;
-		}
 	}
 	
 	/**

@@ -37,4 +37,9 @@ class Model extends EloquentModel
 		'cast_datetime' => 'datetime',
 		'cast_timestamp' => 'timestamp',
 	];
+	
+	protected $dates = [
+		Model::CREATED_AT,
+		Model::UPDATED_AT,
+	];
 }
