@@ -20,15 +20,15 @@ Given the following model:
  */
 class Foo extends Model
 {
-	use \Galahad\Graphoquent\Queryable;
-	
-	protected $casts = [
-	    'stars' => 'float',
-	];
-    	
-    protected $dates = [
-        'created_at',
-    ];
+  use \Galahad\Graphoquent\Queryable;
+  
+  protected $casts = [
+    'stars' => 'float',
+  ];
+  
+  protected $dates = [
+    'created_at',
+  ];
 }
 ```
 
@@ -36,8 +36,8 @@ Graphoquent will build the following GraphQL Type:
 
 ```graphql
 type Foo {
-	count: Int
-	stars: Float
-	created_at: String
+  count: Int
+  stars: Float
+  created_at: String
 }
 ```
