@@ -2,14 +2,20 @@
 
 namespace Galahad\Graphoquent;
 
+use Illuminate\Contracts\Container\Container;
 use Illuminate\Support\ServiceProvider as IlluminateProvider;
 
 class ServiceProvider extends IlluminateProvider
 {
+	/**
+	 * Register GraphQL to the service container
+	 */
 	public function register()
 	{
-		$this->app->singleton('graphql', function ($app) {
-			return new GraphQL();
+		$this->app->singleton('graphql', function(Container $app) {
+			return new GraphQL(
+				$app->make('config')->get('graphoquent')
+			);
 		});
 		
 		$this->app->alias('graphql', GraphQL::class);
@@ -24,5 +30,18 @@ class ServiceProvider extends IlluminateProvider
 			__DIR__.'/../config/graphoquent.php',
 			'graphoquent'
 		);
+	}
+	
+	/**
+	 * Get the services provided by the provider
+	 *
+	 * @return array
+	 */
+	public function provides()
+	{
+		return [
+			'graphql',
+			GraphQL::class,
+		];
 	}
 }
