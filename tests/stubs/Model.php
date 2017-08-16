@@ -2,6 +2,7 @@
 
 namespace Galahad\Graphoquent\Tests\Stubs;
 
+use Galahad\Graphoquent\Queryable;
 use Illuminate\Database\Eloquent\Model as EloquentModel;
 
 /**
@@ -24,6 +25,8 @@ use Illuminate\Database\Eloquent\Model as EloquentModel;
  */
 class Model extends EloquentModel
 {
+	use Queryable;
+	
 	protected $casts = [
 		'cast_int' => 'int',
 		'cast_integer' => 'integer',
