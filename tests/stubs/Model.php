@@ -45,4 +45,6 @@ class Model extends EloquentModel
 		Model::CREATED_AT,
 		Model::UPDATED_AT,
 	];
+	
+	protected $guarded = [];
 }

@@ -23,7 +23,7 @@ class FindQuery extends EloquentQuery
 		];
 	}
 	
-	public function resolve($value, $args, $context, ResolveInfo $info)
+	public function resolve($value, $args, $context = null, ResolveInfo $info = null)
 	{
 		$id = $args[$this->model->getKeyName()];
 		return $this->model->newQuery()->find($id);
