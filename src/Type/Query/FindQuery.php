@@ -9,7 +9,7 @@ class FindQuery extends EloquentQuery
 {
 	public function name()
 	{
-		return 'Find'.$this->getModelName().'Query';
+		return 'find'.$this->getModelName();
 	}
 	
 	public function args()

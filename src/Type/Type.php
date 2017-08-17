@@ -3,6 +3,7 @@
 namespace Galahad\Graphoquent\Type;
 
 use Galahad\Graphoquent\Type\Query\OperatorType;
+use Galahad\Graphoquent\Type\Query\PaginationType;
 use Galahad\Graphoquent\Type\Query\WhereClauseType;
 use Galahad\Graphoquent\Type\Query\WhereIntClauseType;
 use GraphQL\Type\Definition\Type as BaseType;
@@ -13,6 +14,14 @@ class Type extends BaseType
 	 * @var array
 	 */
 	protected static $graphoquentTypes = [];
+	
+	/**
+	 * @return PaginationType
+	 */
+	public static function pagination()
+	{
+		return static::graphoquentType(PaginationType::class);
+	}
 	
 	/**
 	 * @return WhereClauseType

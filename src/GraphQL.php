@@ -100,19 +100,24 @@ class GraphQL
 	protected function getAuthorizedTypes($actor)
 	{
 		$default = (bool) Arr::get($this->config, 'expose_types', false);
-		$gate = null === $actor
-			? $this->gate
-			: $this->gate->forUser($actor);
+		$public = Arr::get($this->config, 'public_types', []);
 		
 		return $this->types
-			->filter(function($type) use ($actor, $gate, $default) {
+			->filter(function($type) use ($actor, $public, $default) {
 				if (method_exists($type, 'authorizeGraphQL')) {
 					return call_user_func([new $type(), 'authorizeGraphQL'], $actor, 'expose');
 				}
 				
-				$policy = $gate->getPolicyFor($type);
-				if (($policy && is_callable([$policy, 'expose'])) || $gate->has('expose')) {
-					return $gate->allows('expose', $type);
+				if ($actor) {
+					$gate = $this->gate->forUser($actor);
+					$policy = $gate->getPolicyFor($type);
+					if (($policy && method_exists($policy, 'expose')) || $gate->has('expose')) {
+						return $gate->allows('expose', $type);
+					}
+				}
+				
+				if (in_array($type, $public)) {
+					return true;
 				}
 				
 				return $default;

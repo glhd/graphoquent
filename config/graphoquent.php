@@ -18,19 +18,23 @@ return [
 	
 	/*
 	|--------------------------------------------------------------------------
-	| Default Type Visibility
+	| Type Visibility
 	|--------------------------------------------------------------------------
 	|
-	| When set to true, all registered types will be exposed to
+	| When expose_types is set to true, all registered types will be exposed to
 	| introspection requests (see http://graphql.org/learn/introspection/).
 	|
 	| When set to false, all types will be hidden unless explicitly overridden.
 	|
-	| Can be overridden with a Policy's expose() method or with the
-	| Model's authorizeGraphQL() method.
+	| To make a type visible to unauthenticated requests, add them to the
+	| public_types array. These types will always be visible to introspection.
 	|
 	*/
 	
 	'expose_types' => false,
+	
+	'public_types' => [
+		//
+	],
 	
 ];

@@ -3,10 +3,11 @@
 namespace Galahad\Graphoquent;
 
 use Galahad\Graphoquent\Type\ModelType;
+use Galahad\Graphoquent\Type\Query\AllQuery;
 use Galahad\Graphoquent\Type\Query\FindQuery;
 use GraphQL\Type\Definition\ObjectType;
 use GraphQL\Type\Definition\Type;
-use Illuminate\Contracts\Auth\Access\Authorizable;
+use Illuminate\Support\Collection;
 
 /**
  * Trait Queryable
@@ -53,11 +54,16 @@ trait Queryable
 	 */
 	public function toGraphQLQueries()
 	{
-		$queries = [];
+		$queries = [
+			FindQuery::class,
+			AllQuery::class,
+		];
 		
-		$find = new FindQuery(static::class);
-		$queries[$find->name()] = $find;
-		
-		return $queries;
+		return (new Collection($queries))
+			->mapWithKeys(function($className) {
+				$query = new $className(static::class);
+				return [$query->getName() => $query];
+			})
+			->toArray();
 	}
 }

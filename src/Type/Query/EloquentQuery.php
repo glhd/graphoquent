@@ -3,9 +3,7 @@
 namespace Galahad\Graphoquent\Type\Query;
 
 use Galahad\Graphoquent\Exception\ModelNotQueryable;
-use Galahad\Graphoquent\GraphQL;
 use GraphQL\Type\Definition\Type;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
 
 abstract class EloquentQuery extends Query
