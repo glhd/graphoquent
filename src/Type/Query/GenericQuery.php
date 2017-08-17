@@ -28,6 +28,12 @@ class GenericQuery extends EloquentQuery
 		];
 	}
 	
+	public function type()
+	{
+		$modelType = parent::type();
+		return Type::listOf($modelType);
+	}
+	
 	public function resolve($value, $args, $context = null, ResolveInfo $info = null)
 	{
 		$query = $this->model->newQuery();

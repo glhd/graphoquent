@@ -6,6 +6,8 @@ use Galahad\Graphoquent\GraphQL;
 use Galahad\Graphoquent\Tests\Stubs\Model;
 use Galahad\Graphoquent\Type\Query\FindQuery;
 use Galahad\Graphoquent\Type\Query\GenericQuery;
+use GraphQL\Language\Parser;
+use GraphQL\Language\Source;
 use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Query\Builder as QueryBuilder;
@@ -47,6 +49,14 @@ class EloquentQueryTest extends TestCase
 		]);
 		
 		$this->assertSame($expected, $actual);
+	}
+	
+	protected function query($query)
+	{
+		// TODO:
+		$source = new Source($query);
+		$documentNode = Parser::parse($source);
+		return $documentNode;
 	}
 	
 	protected function graphQL()
