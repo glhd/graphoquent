@@ -18,16 +18,48 @@ return [
 	
 	/*
 	|--------------------------------------------------------------------------
-	| Type Visibility
+	| GraphQL Queries
 	|--------------------------------------------------------------------------
 	|
-	| When expose_types is set to true, all registered types will be exposed to
-	| introspection requests (see http://graphql.org/learn/introspection/).
+	| Models implementing Queryable will automatically register queries for
+	| common Eloquent methods (find, all, etc). Register any additional
+	| custom queries here.
 	|
-	| When set to false, all types will be hidden unless explicitly overridden.
+	*/
+	
+	'queries' => [
+		//
+	],
+	
+	/*
+	|--------------------------------------------------------------------------
+	| GraphQL Mutations
+	|--------------------------------------------------------------------------
 	|
-	| To make a type visible to unauthenticated requests, add them to the
-	| public_types array. These types will always be visible to introspection.
+	| Models implementing Queryable will automatically register mutations for
+	| common Eloquent methods (create, destroy, etc). Register any additional
+	| custom mutations here.
+	|
+	*/
+	
+	'mutations' => [
+		//
+	],
+	
+	/*
+	|--------------------------------------------------------------------------
+	| Visibility Settings
+	|--------------------------------------------------------------------------
+	|
+	| When expose_* is set to true, all registered types/queries/mutations will
+	| be exposed for introspection (http://graphql.org/learn/introspection/)
+	|
+	| When set to false, all they will be hidden unless explicitly overridden
+	| via a Model's authorizeGraphQL() method (in the case of a Model-based
+	| Type) or a Gate/Policy (for types, queries, and mutations).
+	|
+	| To make a type/query/mutation visible to unauthenticated requests, add it
+	| to the public_* array. These will always be visible to introspection.
 	|
 	*/
 	
@@ -36,5 +68,17 @@ return [
 	'public_types' => [
 		//
 	],
+	
+	'expose_queries' => false,
+	
+	'public_queries' => [
+		//
+	],
+	
+	'expose_mutations' => false,
+	
+	'public_mutations' => [
+		//
+	]
 	
 ];
