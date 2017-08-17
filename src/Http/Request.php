@@ -4,6 +4,7 @@ namespace Galahad\Graphoquent\Http;
 
 use Illuminate\Contracts\Auth\Access\Authorizable;
 use Illuminate\Http\Request as HttpRequest;
+use Illuminate\Support\Arr;
 
 class Request
 {
@@ -51,9 +52,12 @@ class Request
 	{
 		$this->setHttpRequest($request);
 		
-		$this->setRequestString($request->get('query'));
-		$this->setOperation($request->get('operation'));
-		$this->setVariables($request->get('variables'));
+		$input = $request->input();
+		
+		$this->setRequestString(Arr::get($input, 'query'));
+		$this->setOperation(Arr::get($input, 'operation'));
+		$this->setVariables(Arr::get($input, 'variables'));
+		
 		$this->setActor($request->user());
 	}
 	
