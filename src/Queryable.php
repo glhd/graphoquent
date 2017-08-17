@@ -3,6 +3,7 @@
 namespace Galahad\Graphoquent;
 
 use Galahad\Graphoquent\Type\ModelType;
+use Galahad\Graphoquent\Type\Query\FindQuery;
 use GraphQL\Type\Definition\ObjectType;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Contracts\Auth\Access\Authorizable;
@@ -20,29 +21,6 @@ trait Queryable
 	 * @var ModelType|ObjectType|Type
 	 */
 	protected static $graphQLType;
-	
-	/**
-	 * Eloquent queries to expose
-	 *
-	 * @var array
-	 */
-	protected $graphoquentQueries = [
-		'find',
-		'all',
-		'query',
-	];
-	
-	/**
-	 * Eloquent mutations to expose
-	 *
-	 * @var array
-	 */
-	protected $graphoquentMutations = [
-		'create',
-		'update',
-		'updateOrCreate',
-		'destroy',
-	];
 	
 	/**
 	 * Get the GraphQL Type for this model
@@ -66,5 +44,20 @@ trait Queryable
 	public static function toGraphQLType()
 	{
 		return new ModelType(new static());
+	}
+	
+	/**
+	 * Create an array of queries associated with this model
+	 *
+	 * @return array
+	 */
+	public function toGraphQLQueries()
+	{
+		$queries = [];
+		
+		$find = new FindQuery(static::class);
+		$queries[$find->name()] = $find;
+		
+		return $queries;
 	}
 }

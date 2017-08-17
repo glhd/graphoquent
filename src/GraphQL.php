@@ -2,15 +2,17 @@
 
 namespace Galahad\Graphoquent;
 
+use Galahad\Graphoquent\Exception\ModelNotQueryable;
 use Galahad\Graphoquent\Http\Request;
 use GraphQL\Executor\ExecutionResult;
 use GraphQL\GraphQL as BaseGraphQL;
 use GraphQL\Schema;
+use GraphQL\Type\Definition\ObjectType;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Contracts\Auth\Access\Authorizable;
+use Illuminate\Contracts\Auth\Access\Gate;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
-use Illuminate\Contracts\Auth\Access\Gate;
 
 class GraphQL
 {
@@ -37,9 +39,9 @@ class GraphQL
 	 */
 	public function __construct(Gate $gate, array $config)
 	{
-		$this->types = new Collection(Arr::get($config, 'types', []));
-		$this->config = Arr::except($config, ['types', 'policies']);
 		$this->gate = $gate;
+		$this->types = new Collection(Arr::get($config, 'types', []));
+		$this->config = Arr::except($config, ['types']);
 	}
 	
 	/**
@@ -66,10 +68,26 @@ class GraphQL
 	 */
 	protected function schemaForActor($actor = null)
 	{
+		$types = $this->getAuthorizedTypes($actor);
+		
+		$queries = $types
+			->flatMap(function($type) {
+				return method_exists($type, 'associatedQueries')
+					? $type->associatedQueries()
+					: [];
+			})
+			->map(function($query) {
+				return $query->toArray();
+			})
+			->toArray();
+		
 		return new Schema([
-			'query' => null,
+			'query' => new ObjectType([
+				'name' => 'Query',
+				'fields' => $queries,
+			]),
 			'mutation' => null,
-			'types' => $this->getAuthorizedTypes($actor),
+			'types' => $types->toArray(),
 		]);
 	}
 	
@@ -77,7 +95,7 @@ class GraphQL
 	 * Build an array of authorized Types for a given user
 	 *
 	 * @param Authorizable|null $actor
-	 * @return array
+	 * @return Collection
 	 */
 	protected function getAuthorizedTypes($actor)
 	{
@@ -86,16 +104,32 @@ class GraphQL
 			? $this->gate
 			: $this->gate->forUser($actor);
 		
-		return $this->types->filter(function($type) use ($actor, $gate, $default) {
-			if (method_exists($type, 'authorizeGraphQL')) {
-				return call_user_func([new $type(), 'authorizeGraphQL'], $actor, 'expose');
-			}
-			
-			if ($gate->getPolicyFor($type) || $gate->has('expose')) {
-				return $gate->allows('expose', $type);
-			}
-			
-			return $default;
-		})->toArray();
+		return $this->types
+			->filter(function($type) use ($actor, $gate, $default) {
+				if (method_exists($type, 'authorizeGraphQL')) {
+					return call_user_func([new $type(), 'authorizeGraphQL'], $actor, 'expose');
+				}
+				
+				$policy = $gate->getPolicyFor($type);
+				if (($policy && is_callable([$policy, 'expose'])) || $gate->has('expose')) {
+					return $gate->allows('expose', $type);
+				}
+				
+				return $default;
+			})
+			->map(function($className) {
+				if (method_exists($className, 'getGraphQLType')) {
+					return forward_static_call("{$className}::getGraphQLType");
+				}
+				
+				if (is_subclass_of($className, Type::class)) {
+					return new $className();
+				}
+				
+				$exception = new ModelNotQueryable();
+				$exception->setModel($className);
+				
+				return $exception;
+			});
 	}
 }

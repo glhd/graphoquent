@@ -11,25 +11,18 @@ use Illuminate\Support\Str;
 abstract class EloquentQuery extends Query
 {
 	/**
-	 * @var Model
+	 * @var string
 	 */
-	protected $model;
-	
-	/**
-	 * @var GraphQL
-	 */
-	protected $graphQL;
+	protected $className;
 	
 	/**
 	 * Constructor
 	 *
-	 * @param GraphQL $graphQL
-	 * @param Model $model
+	 * @param string $className
 	 */
-	public function __construct(GraphQL $graphQL, Model $model)
+	public function __construct($className)
 	{
-		$this->graphQL = $graphQL;
-		$this->model = $model;
+		$this->className = $className;
 	}
 	
 	/**
@@ -40,14 +33,13 @@ abstract class EloquentQuery extends Query
 	 */
 	public function type()
 	{
-		$className = get_class($this->model);
-		if (!method_exists($className, 'getGraphQLType')) {
+		if (!method_exists($this->className, 'getGraphQLType')) {
 			$exception = new ModelNotQueryable();
-			$exception->setModel($this->model);
+			$exception->setModel($this->className);
 			throw $exception;
 		}
 		
-		return forward_static_call("{$className}::getGraphQLType");
+		return forward_static_call("{$this->className}::getGraphQLType");
 	}
 	
 	/**
@@ -57,7 +49,7 @@ abstract class EloquentQuery extends Query
 	 */
 	protected function getModelName()
 	{
-		return class_basename(get_class($this->model));
+		return class_basename($this->className);
 	}
 	
 	/**

@@ -14,7 +14,7 @@ class FindQuery extends EloquentQuery
 	
 	public function args()
 	{
-		$id = $this->model->getKeyName();
+		$id = (new $this->className())->getKeyName();
 		return [
 			$id => [
 				'description' => 'The identifier for a given '.$this->getModelNameForDescription(),
@@ -25,8 +25,9 @@ class FindQuery extends EloquentQuery
 	
 	public function resolve($value, $args, $context = null, ResolveInfo $info = null)
 	{
-		$id = $args[$this->model->getKeyName()];
-		return $this->model->newQuery()->find($id);
+		$model = new $this->className();
+		$id = $args[$model->getKeyName()];
+		return $model->newQuery()->find($id);
 	}
 	
 	public function description()

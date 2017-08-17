@@ -2,6 +2,7 @@
 
 namespace Galahad\Graphoquent\Type;
 
+use Galahad\Graphoquent\Queryable;
 use GraphQL\Type\Definition\ObjectType;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Database\Eloquent\Model;
@@ -22,6 +23,11 @@ class ModelType extends ObjectType
 	 * @var Model
 	 */
 	protected $model;
+	
+	/**
+	 * @var array
+	 */
+	protected $queries;
 	
 	/**
 	 * Map a phpDocumentor Tag to a GraphQL tag
@@ -166,7 +172,7 @@ class ModelType extends ObjectType
 	/**
 	 * Constructor
 	 *
-	 * @param Model $model
+	 * @param Model|Queryable $model
 	 */
 	public function __construct(Model $model)
 	{
@@ -176,6 +182,20 @@ class ModelType extends ObjectType
 		];
 		
 		parent::__construct($config);
+		
+		$this->queries = method_exists($model, 'toGraphQLQueries')
+			? $model->toGraphQLQueries()
+			: [];
+	}
+	
+	/**
+	 * Get queries associated with this type
+	 *
+	 * @return array
+	 */
+	public function associatedQueries()
+	{
+		return $this->queries;
 	}
 	
 	/**

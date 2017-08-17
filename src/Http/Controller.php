@@ -30,4 +30,9 @@ class Controller extends IlluminateController
 		
 		return new JsonResponse($result);
 	}
+	
+	public function graphiql()
+	{
+		return view('graphoquent::graphiql');
+	}
 }
