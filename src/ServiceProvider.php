@@ -15,14 +15,14 @@ class ServiceProvider extends IlluminateProvider
 	 */
 	public function register()
 	{
-		$this->app->singleton('graphql', function(Container $app) {
-			return new GraphQL(
+		$this->app->singleton('graphoquent', function(Container $app) {
+			return new Graphoquent(
 				$app->make(Gate::class),
 				$app->make('config')->get('graphoquent')
 			);
 		});
 		
-		$this->app->alias('graphql', GraphQL::class);
+		$this->app->alias('graphoquent', Graphoquent::class);
 	}
 	
 	/**
@@ -78,8 +78,8 @@ class ServiceProvider extends IlluminateProvider
 	public function provides()
 	{
 		return [
-			'graphql',
-			GraphQL::class,
+			'graphoquent',
+			Graphoquent::class,
 		];
 	}
 }

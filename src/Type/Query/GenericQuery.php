@@ -36,7 +36,7 @@ class GenericQuery extends EloquentQuery
 	
 	public function resolve($value, $args, $context = null, ResolveInfo $info = null)
 	{
-		$query = $this->className->newQuery();
+		$query = forward_static_call([$this->className, 'query']);
 		
 		foreach (Arr::get($args, 'where', []) as $where) {
 			$operator = isset($where['operator']) ? $where['operator'] : '=';

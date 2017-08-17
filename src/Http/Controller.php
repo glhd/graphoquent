@@ -2,7 +2,7 @@
 
 namespace Galahad\Graphoquent\Http;
 
-use Galahad\Graphoquent\GraphQL;
+use Galahad\Graphoquent\Graphoquent;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request as HttpRequest;
 use Illuminate\Routing\Controller as IlluminateController;
@@ -10,23 +10,23 @@ use Illuminate\Routing\Controller as IlluminateController;
 class Controller extends IlluminateController
 {
 	/**
-	 * @var GraphQL
+	 * @var Graphoquent
 	 */
-	protected $graphQL;
+	protected $graphoquent;
 	
 	/**
 	 * Constructor
 	 *
-	 * @param GraphQL $graphQL
+	 * @param Graphoquent $graphoquent
 	 */
-	public function __construct(GraphQL $graphQL)
+	public function __construct(Graphoquent $graphoquent)
 	{
-		$this->graphQL = $graphQL;
+		$this->graphoquent = $graphoquent;
 	}
 	
 	public function handleRequest(HttpRequest $request)
 	{
-		$result = $this->graphQL->executeForRequest(new Request($request));
+		$result = $this->graphoquent->executeForRequest(new Request($request));
 		
 		return new JsonResponse($result);
 	}

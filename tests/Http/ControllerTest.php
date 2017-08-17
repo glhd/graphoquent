@@ -2,11 +2,13 @@
 
 namespace Galahad\Graphoquent\Tests\Http;
 
-use Galahad\Graphoquent\GraphQL;
+use Galahad\Graphoquent\Graphoquent;
 use Galahad\Graphoquent\Http\Controller;
 use Galahad\Graphoquent\Tests\Stubs\Model;
+use Illuminate\Contracts\Auth\Access\Gate;
 use Illuminate\Http\Request;
 use PHPUnit\Framework\TestCase;
+use Mockery as m;
 
 class ControllerTest extends TestCase
 {
@@ -23,15 +25,16 @@ class ControllerTest extends TestCase
 		$request->request->set('query', $gql);
 		$request->request->set('variables', json_encode(['id' => 1]));
 		
-		$controller = new Controller($this->graphQL());
+		$controller = new Controller($this->graphoquent());
 		
 		$result = $controller->handleRequest($request);
-		dd($result);
+		$this->assertNotNull($result); // FIXME
 	}
 	
-	protected function graphQL()
+	protected function graphoquent()
 	{
-		return new GraphQL([
+		$gate = m::mock(Gate::class);
+		return new Graphoquent($gate, [
 			'types' => [Model::class],
 		]);
 	}

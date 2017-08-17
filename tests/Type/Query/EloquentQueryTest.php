@@ -2,12 +2,13 @@
 
 namespace Galahad\Graphoquent\Tests\Type\Query;
 
-use Galahad\Graphoquent\GraphQL;
+use Galahad\Graphoquent\Graphoquent;
 use Galahad\Graphoquent\Tests\Stubs\Model;
 use Galahad\Graphoquent\Type\Query\FindQuery;
 use Galahad\Graphoquent\Type\Query\GenericQuery;
 use GraphQL\Language\Parser;
 use GraphQL\Language\Source;
+use Illuminate\Contracts\Auth\Access\Gate;
 use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Query\Builder as QueryBuilder;
@@ -25,7 +26,7 @@ class EloquentQueryTest extends TestCase
 			$mock->shouldReceive('find')->with(1)->andReturn($expected);
 		});
 		
-		$find = new FindQuery($this->graphQL(), $model);
+		$find = new FindQuery($model);
 		$actual = $find->resolve(null, ['id' => $expected->id]);
 		
 		$this->assertSame($expected, $actual);
@@ -40,7 +41,7 @@ class EloquentQueryTest extends TestCase
 			$mock->shouldReceive('get')->once()->andReturn($expected);
 		});
 		
-		$query = new GenericQuery($this->graphQL(), $model);
+		$query = new GenericQuery($model);
 		$actual = $query->resolve(null, [
 			'where' => [[
 				'field' => 'foo',
@@ -59,9 +60,10 @@ class EloquentQueryTest extends TestCase
 		return $documentNode;
 	}
 	
-	protected function graphQL()
+	protected function graphoquent()
 	{
-		return new GraphQL([
+		$gate = m::mock(Gate::class);
+		return new Graphoquent($gate, [
 			'types' => [Model::class],
 		]);
 	}

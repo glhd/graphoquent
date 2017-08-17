@@ -14,7 +14,7 @@ use Illuminate\Contracts\Auth\Access\Gate;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 
-class GraphQL
+class Graphoquent
 {
 	/**
 	 * @var Gate
