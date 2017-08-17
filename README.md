@@ -41,3 +41,29 @@ type Foo {
   created_at: String
 }
 ```
+
+# Authorization
+
+## Gates & Policies
+
+Graphoquent uses Laravel Gates for default authorization:
+
+- `expose`: Can this user (or `null` if not logged in) use [introspection](http://graphql.org/learn/introspection/)
+  to lear about this Type?
+
+## Custom
+
+You may provide custom authorization for any Model by defining an
+`authorizeGraphQL` method on the model:
+
+
+```php
+public function authorizeGraphQL($actor, $ability)
+{
+	if ('expose' === $ability) {
+		return true;
+	}
+	
+	return $actor && $actor->id === $this->owner_id;
+}
+```

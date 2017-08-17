@@ -18,22 +18,19 @@ return [
 	
 	/*
 	|--------------------------------------------------------------------------
-	| GraphQL Policies
+	| Default Type Visibility
 	|--------------------------------------------------------------------------
 	|
-	| Models automatically use Laravel Gates for authorization. If you have
-	| custom types, you can register policies for those types here. You can
-	| also override any authorization logic with custom GraphQL policies
-	| for models here.
+	| When set to true, all registered types will be exposed to
+	| introspection requests (see http://graphql.org/learn/introspection/).
 	|
-	| Example:
+	| When set to false, all types will be hidden unless explicitly overridden.
 	|
-	| App\GraphQL\FooType::class => App\Policies\FooPolicy::class,
+	| Can be overridden with a Policy's expose() method or with the
+	| Model's authorizeGraphQL() method.
 	|
 	*/
 	
-	'policies' => [
-		//
-	],
+	'expose_types' => false,
 	
 ];

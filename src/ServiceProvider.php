@@ -4,6 +4,7 @@ namespace Galahad\Graphoquent;
 
 use Illuminate\Contracts\Container\Container;
 use Illuminate\Support\ServiceProvider as IlluminateProvider;
+use Illuminate\Contracts\Auth\Access\Gate;
 
 class ServiceProvider extends IlluminateProvider
 {
@@ -14,6 +15,7 @@ class ServiceProvider extends IlluminateProvider
 	{
 		$this->app->singleton('graphql', function(Container $app) {
 			return new GraphQL(
+				$app->make(Gate::class),
 				$app->make('config')->get('graphoquent')
 			);
 		});

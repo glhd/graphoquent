@@ -2,14 +2,23 @@
 
 namespace Galahad\Graphoquent;
 
+use Galahad\Graphoquent\Http\Request;
+use GraphQL\Executor\ExecutionResult;
+use GraphQL\GraphQL as BaseGraphQL;
 use GraphQL\Schema;
 use GraphQL\Type\Definition\Type;
-use Illuminate\Http\Request;
+use Illuminate\Contracts\Auth\Access\Authorizable;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
+use Illuminate\Contracts\Auth\Access\Gate;
 
 class GraphQL
 {
+	/**
+	 * @var Gate
+	 */
+	protected $gate;
+	
 	/**
 	 * @var array
 	 */
@@ -21,77 +30,72 @@ class GraphQL
 	protected $types;
 	
 	/**
-	 * @var array
-	 */
-	protected $policies;
-	
-	/**
 	 * Constructor
 	 *
+	 * @param Gate $gate
 	 * @param array $config
 	 */
-	public function __construct(array $config)
+	public function __construct(Gate $gate, array $config)
 	{
 		$this->types = new Collection(Arr::get($config, 'types', []));
-		$this->policies = Arr::get($config, 'policies', []);
-		
 		$this->config = Arr::except($config, ['types', 'policies']);
+		$this->gate = $gate;
+	}
+	
+	/**
+	 * @param Request $request
+	 * @return ExecutionResult
+	 */
+	public function executeForRequest(Request $request)
+	{
+		return BaseGraphQL::executeAndReturnResult(
+			$this->schemaForActor($request->getActor()),
+			$request->getRequestString(),
+			$request->getRoot(),
+			$request->getContext(),
+			$request->getVariables(),
+			$request->getOperation()
+		);
 	}
 	
 	/**
 	 * Build a custom Schema for a given request
 	 *
-	 * @param Request $request
+	 * @param Authorizable|null $actor
 	 * @return Schema
 	 */
-	public function schemaForRequest(Request $request)
+	protected function schemaForActor($actor = null)
 	{
 		return new Schema([
 			'query' => null,
 			'mutation' => null,
-			'types' => $this->getAuthorizedTypes($request->user()),
+			'types' => $this->getAuthorizedTypes($actor),
 		]);
 	}
 	
 	/**
 	 * Build an array of authorized Types for a given user
 	 *
-	 * @param mixed $actor
+	 * @param Authorizable|null $actor
 	 * @return array
 	 */
 	protected function getAuthorizedTypes($actor)
 	{
-		return $this->types->filter(function($type) use ($actor) {
-			if ($policy = $this->getPolicy($type)) {
-				if (!method_exists($policy, 'view')) {
-					return false;
-				}
-				
-				return $policy->view($actor, $type);
-			}
-			
+		$default = (bool) Arr::get($this->config, 'expose_types', false);
+		$gate = null === $actor
+			? $this->gate
+			: $this->gate->forUser($actor);
+		
+		return $this->types->filter(function($type) use ($actor, $gate, $default) {
 			if (method_exists($type, 'authorizeGraphQL')) {
-				return $type->authorizeGraphQL($actor, 'view');
+				return call_user_func([new $type(), 'authorizeGraphQL'], $actor, 'expose');
 			}
 			
-			return false;
+			if ($gate->getPolicyFor($type) || $gate->has('expose')) {
+				return $gate->allows('expose', $type);
+			}
+			
+			return $default;
 		})->toArray();
-	}
-	
-	/**
-	 * Load a Policy for a given Type
-	 *
-	 * @param $type
-	 * @return mixed|null
-	 */
-	protected function getPolicy($type)
-	{
-		$className = get_class($type);
-		
-		if (isset($this->policies[$className])) {
-			return $this->policies[$className];
-		}
-		
-		return null;
 	}
 }

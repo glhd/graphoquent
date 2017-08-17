@@ -67,16 +67,4 @@ trait Queryable
 	{
 		return new ModelType(new static());
 	}
-	
-	/**
-	 * Authorize a query/mutation on a model
-	 *
-	 * @param Authorizable $actor
-	 * @param $ability
-	 * @return bool
-	 */
-	public function authorizeGraphQL(Authorizable $actor, $ability)
-	{
-		return $actor->can($ability, $this);
-	}
 }
