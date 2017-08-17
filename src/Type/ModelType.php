@@ -6,6 +6,7 @@ use Galahad\Graphoquent\Queryable;
 use GraphQL\Type\Definition\ObjectType;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 use phpDocumentor\Reflection\DocBlock\Tags\Property;
 use phpDocumentor\Reflection\DocBlock\Tags\PropertyRead;
@@ -91,30 +92,32 @@ class ModelType extends ObjectType
 	 */
 	protected static function buildFields(Model $model)
 	{
-		// TODO: id and dates and docblock
-		
-		$reflection = new ReflectionClass($model);
-		
-		return array_merge(
-			static::buildFieldsFromAnnotations($model, $reflection),
-			static::buildFieldsFromCasts($model, $reflection),
-			static::buildFieldsFromDates($model, $reflection)
+		$fields = array_merge(
+			static::buildFieldsFromAnnotations($model),
+			static::buildFieldsFromCasts($model),
+			static::buildFieldsFromDates($model)
 		);
+		
+		if (!empty($visible = $model->getVisible())) {
+			return Arr::only($fields, $visible);
+		}
+		
+		if (!empty($hidden = $model->getHidden())) {
+			return Arr::except($fields, $hidden);
+		}
+		
+		return $fields;
 	}
 	
 	/**
 	 * Build array of fields from Model::$casts
 	 *
 	 * @param Model $model
-	 * @param ReflectionClass $reflection
 	 * @return array
 	 */
-	protected static function buildFieldsFromCasts(Model $model, ReflectionClass $reflection)
+	protected static function buildFieldsFromCasts(Model $model)
 	{
-		$property = $reflection->getProperty('casts');
-		$property->setAccessible(true);
-		
-		if (empty($casts = $property->getValue($model))) {
+		if (empty($casts = $model->getCasts())) {
 			return [];
 		}
 		
@@ -128,30 +131,22 @@ class ModelType extends ObjectType
 	 * Build array of fields from Model::$dates
 	 *
 	 * @param Model $model
-	 * @param ReflectionClass $reflection
 	 * @return array
 	 */
-	protected static function buildFieldsFromDates(Model $model, ReflectionClass $reflection)
+	protected static function buildFieldsFromDates(Model $model)
 	{
-		$property = $reflection->getProperty('dates');
-		$property->setAccessible(true);
-		
-		if (empty($dates = $property->getValue($model))) {
-			return [];
-		}
-		
-		return array_fill_keys($dates, Type::string());
+		return array_fill_keys($model->getDates(), Type::string());
 	}
 	
 	/**
 	 * Build array of fields from property and property-ready annotations
 	 *
 	 * @param Model $model
-	 * @param ReflectionClass $reflection
 	 * @return array
 	 */
-	protected static function buildFieldsFromAnnotations(Model $model, ReflectionClass $reflection)
+	protected static function buildFieldsFromAnnotations(Model $model)
 	{
+		$reflection = new ReflectionClass($model);
 		$docblock = $reflection->getDocComment();
 		if (empty($docblock) || false === stripos($docblock, 'property')) {
 			return [];
@@ -167,6 +162,21 @@ class ModelType extends ObjectType
 			->mapWithKeys([static::class, 'mapTagToGraphQL'])
 			->filter()
 			->toArray();
+	}
+	
+	/**
+	 * Get list of hidden fields
+	 *
+	 * @param Model $model
+	 * @param ReflectionClass $reflection
+	 * @return array
+	 */
+	protected static function getHiddenFields(Model $model, ReflectionClass $reflection)
+	{
+		$property = $reflection->getProperty('hidden');
+		$property->setAccessible(true);
+		
+		return (array) $property->getValue($model);
 	}
 	
 	/**
