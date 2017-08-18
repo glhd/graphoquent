@@ -198,6 +198,11 @@ class ModelType extends ObjectType
 			: [];
 	}
 	
+	public function getModel()
+	{
+		return $this->model;
+	}
+	
 	/**
 	 * Get queries associated with this type
 	 *

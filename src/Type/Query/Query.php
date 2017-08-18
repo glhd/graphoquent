@@ -2,10 +2,28 @@
 
 namespace Galahad\Graphoquent\Type\Query;
 
+use GraphQL\Error\Error;
+use GraphQL\Executor\ExecutionResult;
 use GraphQL\Type\Definition\ResolveInfo;
+use Illuminate\Contracts\Auth\Access\Gate;
 
 abstract class Query
 {
+	/**
+	 * @var Gate
+	 */
+	protected $gate;
+	
+	/**
+	 * Constructor
+	 *
+	 * @param Gate $gate
+	 */
+	public function __construct(Gate $gate)
+	{
+		$this->gate = $gate;
+	}
+	
 	public function getName()
 	{
 		return $this->name();
@@ -30,7 +48,12 @@ abstract class Query
 	public function getResolver()
 	{
 		return function($value, $args, $context = null, ResolveInfo $info = null) {
-			return $this->resolve($value, $args, $context, $info);
+			try {
+				return $this->resolve($value, $args, $context, $info);
+			} catch (\Exception $exception) {
+				$error = new Error($exception->getMessage(), null, null, null, null, $exception);
+				return new ExecutionResult(null, [$error]);
+			}
 		};
 	}
 	

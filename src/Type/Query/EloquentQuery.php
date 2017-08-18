@@ -4,6 +4,7 @@ namespace Galahad\Graphoquent\Type\Query;
 
 use Galahad\Graphoquent\Exception\ModelNotQueryable;
 use GraphQL\Type\Definition\Type;
+use Illuminate\Contracts\Auth\Access\Gate;
 use Illuminate\Support\Str;
 
 abstract class EloquentQuery extends Query
@@ -18,9 +19,10 @@ abstract class EloquentQuery extends Query
 	 *
 	 * @param string $className
 	 */
-	public function __construct($className)
+	public function __construct(Gate $gate, $className)
 	{
 		$this->className = $className;
+		parent::__construct($gate);
 	}
 	
 	/**

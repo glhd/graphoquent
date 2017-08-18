@@ -7,6 +7,7 @@ use Galahad\Graphoquent\Type\Query\AllQuery;
 use Galahad\Graphoquent\Type\Query\FindQuery;
 use GraphQL\Type\Definition\ObjectType;
 use GraphQL\Type\Definition\Type;
+use Illuminate\Contracts\Auth\Access\Gate;
 use Illuminate\Support\Collection;
 
 /**
@@ -61,7 +62,7 @@ trait Queryable
 		
 		return (new Collection($queries))
 			->mapWithKeys(function($className) {
-				$query = new $className(static::class);
+				$query = new $className(app(Gate::class), static::class); // FIXME: app() call
 				return [$query->getName() => $query];
 			})
 			->toArray();

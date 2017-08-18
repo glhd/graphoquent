@@ -58,6 +58,13 @@ class Request
 		$this->setOperation(Arr::get($input, 'operation'));
 		$this->setVariables(Arr::get($input, 'variables'));
 		
+		try {
+			if ($actor = $request->user('api')) {
+				$this->setActor($actor);
+			}
+		} catch (\Exception $exception) {
+		}
+		
 		$this->setActor($request->user());
 	}
 	

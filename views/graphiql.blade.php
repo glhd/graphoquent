@@ -62,7 +62,8 @@ ReactDOM.render(
 				method: 'post',
 				headers: {
 					'Accept': 'application/json',
-					'Content-Type': 'application/json'
+					'Content-Type': 'application/json',
+					'X-CSRF-TOKEN': '{{ $token }}',
 				},
 				body: JSON.stringify(graphQLParams),
 				credentials: 'include'

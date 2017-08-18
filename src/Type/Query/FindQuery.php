@@ -27,9 +27,16 @@ class FindQuery extends EloquentQuery
 	{
 		$model = new $this->className();
 		$id = $args[$model->getKeyName()];
-		return ($found = $model->newQuery()->find($id))
-			? $found->toArray()
-			: null;
+		
+		if (!$found = $model->newQuery()->find($id)) {
+			return null;
+		}
+		
+		if (!$this->gate->forUser($context['actor'])->check('view', $found)) {
+			return null;
+		}
+		
+		return $found->toArray();
 	}
 	
 	public function description()

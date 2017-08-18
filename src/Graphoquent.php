@@ -52,7 +52,7 @@ class Graphoquent
 	public function __construct(Gate $gate, array $config)
 	{
 		$this->gate = $gate;
-		$this->config = Arr::except($config, ['types']);
+		$this->config = $config;
 	}
 	
 	/**
@@ -99,7 +99,7 @@ class Graphoquent
 		if (!$this->queries) {
 			$this->queries = Collection::make(Arr::get($this->config, 'queries', []))
 				->mapWithKeys(function($className) {
-					$query = new $className();
+					$query = new $className($this->gate);
 					return [$query->getName() => $query];
 				});
 		}
@@ -117,19 +117,18 @@ class Graphoquent
 	{
 		$types = $this->getAuthorizedTypes($actor);
 		
-		$queries = array_merge(
-			$types
-				->flatMap(function($type) {
-					return method_exists($type, 'associatedQueries')
-						? $type->associatedQueries()
-						: [];
-				})
-				->map(function($query) {
-					return $query->toArray();
-				})
-				->toArray(),
-			$this->getAuthorizedQueries($actor)->toArray()
-		);
+		$queries = $types
+			->flatMap(function($type) {
+				return method_exists($type, 'associatedQueries')
+					? $type->associatedQueries()
+					: [];
+			})
+			->map(function($query) {
+				return $query->toArray();
+			})
+			->toArray();
+		
+		// $this->getAuthorizedQueries($actor)->toArray()
 		
 		return new Schema([
 			'query' => new ObjectType([
@@ -170,6 +169,10 @@ class Graphoquent
 					return true;
 				}
 				
+				if (method_exists($type, 'getModel') && in_array(get_class($type->getModel()), $public)) {
+					return true;
+				}
+				
 				return $default;
 			});
 	}
@@ -180,13 +183,15 @@ class Graphoquent
 	 */
 	protected function getAuthorizedQueries($actor)
 	{
+		return new Collection([]); // FIXME
+		
 		$default = (bool) Arr::get($this->config, 'expose_queries', false);
 		$public = Arr::get($this->config, 'public_queries', []);
 		
 		return $this->getQueries()
 			->filter(function(Query $query) use ($actor, $public, $default) {
-				if (method_exists($query, 'authorize')) {
-					return call_user_func([$query, 'authorize'], $actor);
+				if (method_exists($query, 'expose')) {
+					return call_user_func([$query, 'expose'], $actor);
 				}
 				
 				if (in_array(get_class($query), $public)) {

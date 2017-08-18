@@ -66,8 +66,10 @@ class ServiceProvider extends IlluminateProvider
 		/** @var Router $router */
 		$router = $this->app->make('router');
 		
-		$router->any('/graphql', Controller::class.'@handleRequest');
-		$router->get('/graphiql', Controller::class.'@graphiql');
+		$router->any('/graphql', Controller::class.'@handleRequest')
+			->middleware($this->app['config']->get('graphoquent.middleware', []));
+		$router->get('/graphiql', Controller::class.'@graphiql')
+			->middleware($this->app['config']->get('graphoquent.graphiql.middleware', []));
 	}
 	
 	/**
